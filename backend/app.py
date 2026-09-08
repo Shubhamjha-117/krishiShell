@@ -1,10 +1,17 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
+from extentions import db
+from models import (
+    Farmer,
+    Crop,
+    Market,
+    MarketPrice,
+    Recommendation
+)
 
 from config import Config
 
-db = SQLAlchemy()
+
 
 def create_app():
     app = Flask(__name__)
@@ -19,6 +26,9 @@ def create_app():
         return jsonify({
             "message": "KrishiShell backend is unning"
         }), 200
+        
+    with app.app_context():
+        db.create_all()
         
     return app
 
