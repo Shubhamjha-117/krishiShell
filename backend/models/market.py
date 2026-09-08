@@ -13,6 +13,16 @@ class Market(db.Model):
         nullable = False
     )
     
+    state = db.Column(
+        db.String(100),
+        nullable = False
+    )
+    
+    district = db.Column(
+        db.String(100),
+        nullable = False
+    )
+    
     latitude = db.Column(
         db.Float
     )

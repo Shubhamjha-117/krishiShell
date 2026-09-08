@@ -10,10 +10,7 @@ class Crop(db.Model):
     
     name = db.Column(
         db.String(100),
-        nullable = False
-    )
-    
-    category = db.Column(
-        db.String(100)
+        nullable = False,
+        unique = True
     )
     

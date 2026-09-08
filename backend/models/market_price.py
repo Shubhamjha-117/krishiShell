@@ -14,12 +14,21 @@ class MarketPrice(db.Model):
         nullable = False
     )
     
-    crop_id = db.column(
+    crop_id = db.Column(
         db.Integer,
-        db.ForeignKey("crops.id")
+        db.ForeignKey("crops.id"),
+        nullable=False
     )
     
-    date = db.Column(
+    variety = db.Column(
+        db.String(150)
+    )
+    
+    grade = db.Column(
+        db.String(100)
+    )
+    
+    arrival_date = db.Column(
         db.Date,
         nullable = False
     )
@@ -33,10 +42,6 @@ class MarketPrice(db.Model):
     )
     
     modal_price = db.Column(
-        db.Float
-    )
-    
-    arrival_volume = db.Column(
         db.Float
     )
     
