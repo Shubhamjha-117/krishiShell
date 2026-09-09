@@ -5,6 +5,10 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     
     if None in (lat1, lon1, lat2, lon2):
         return None
+    if not all(-90 <= value <= 90 for value in (lat1, lat2)):
+        return None
+    if not all(-180 <= value <= 180 for value in (lon1, lon2)):
+        return None
     
     R = 6371.0
     

@@ -9,6 +9,7 @@ from models import (
     Recommendation
 )
 from routes.market_routes import market_bp
+from routes.recommendation_routes import recommendation_bp
 
 from config import Config
 
@@ -18,6 +19,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     app.register_blueprint(market_bp)
+    app.register_blueprint(recommendation_bp)
     
     db.init_app(app)
     
@@ -26,7 +28,7 @@ def create_app():
     @app.get("/api/health")
     def health():
         return jsonify({
-            "message": "KrishiShell backend is unning"
+            "message": "KrishiSell backend is running"
         }), 200
         
     # @app.route("/api/crops", methods=["GET"])

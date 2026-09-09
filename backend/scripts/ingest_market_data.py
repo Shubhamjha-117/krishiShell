@@ -1,4 +1,5 @@
 import os
+import logging
 import requests
 from datetime import datetime
 
@@ -13,6 +14,7 @@ from models.market_price import MarketPrice
 API_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
 
 API_KEY = os.getenv("DATA_GOV_API_KEY")
+logger = logging.getLogger(__name__)
 
 
 def fetch_market_data(
@@ -136,28 +138,44 @@ def get_or_create_market(state, district, market_name):
 
 
 def parse_date(date_string):
-    return datetime.strptime(
-        date_string,
-        "%d/%m/%Y"
-    ).date()
+    if not date_string:
+        raise ValueError("arrival_date is required")
+    for date_format in ("%d/%m/%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(date_string, date_format).date()
+        except ValueError:
+            continue
+    raise ValueError(f"Unsupported arrival_date: {date_string}")
+
+
+def parse_price(value, field_name):
+    if value is None or str(value).strip() == "":
+        raise ValueError(f"{field_name} is required")
+    try:
+        parsed = float(str(value).replace(",", "").strip())
+    except ValueError as error:
+        raise ValueError(f"Invalid {field_name}: {value}") from error
+    if parsed < 0:
+        raise ValueError(f"{field_name} cannot be negative")
+    return parsed
 
 
 def save_record(record):
-    state = record.get("state")
-    district = record.get("district")
-    market_name = record.get("market")
+    state = (record.get("state") or "").strip()
+    district = (record.get("district") or "").strip()
+    market_name = (record.get("market") or "").strip()
 
-    commodity = record.get("commodity")
+    commodity = (record.get("commodity") or "").strip()
     variety = record.get("variety")
     grade = record.get("grade")
 
-    arrival_date = parse_date(
-        record.get("arrival_date")
-    )
+    if not all((state, district, market_name, commodity)):
+        raise ValueError("state, district, market and commodity are required")
+    arrival_date = parse_date(record.get("arrival_date"))
 
-    min_price = record.get("min_price")
-    max_price = record.get("max_price")
-    modal_price = record.get("modal_price")
+    min_price = parse_price(record.get("min_price"), "min_price")
+    max_price = parse_price(record.get("max_price"), "max_price")
+    modal_price = parse_price(record.get("modal_price"), "modal_price")
 
     # Get or create crop
     crop = get_or_create_crop(commodity)
@@ -219,7 +237,8 @@ def ingest_data(
     for record in records:
 
         try:
-            was_inserted = save_record(record)
+            with db.session.begin_nested():
+                was_inserted = save_record(record)
 
             if was_inserted:
                 inserted += 1
@@ -228,9 +247,7 @@ def ingest_data(
 
         except Exception as e:
 
-            print("Error processing record:")
-            print(record)
-            print(e)
+            logger.warning("Skipping malformed market record %r: %s", record, e)
 
     db.session.commit()
 

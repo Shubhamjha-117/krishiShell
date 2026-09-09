@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+from extentions import db
 from models.crop import Crop
 from models.market import Market
 
@@ -45,7 +46,7 @@ def get_market_prices(market_id):
     from models.market import Market
     from models.market_price import MarketPrice
 
-    market = Market.query.get(market_id)
+    market = db.session.get(Market, market_id)
 
     if not market:
         return jsonify({
@@ -72,5 +73,6 @@ def get_market_prices(market_id):
                 "modal_price": price.modal_price
             }
             for price in prices
+            if price.crop is not None
         ]
     })
