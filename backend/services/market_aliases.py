@@ -1,0 +1,17 @@
+MARKET_LOCALITY_ALIASES = {
+    "APMC Karad": ["karad"],
+    "APMC Satara": ["satara"],
+    "APMC Solapur": ["solapur"],
+    "APMC Mumbai": ["turbhe", "vashi", "sanpada", "navi mumbai"],
+    "Mumbai-Onion & Potato Market": ["turbhe", "vashi"],
+    "Lasalgaon(Niphad)": ["lasalgaon", "niphad"],
+    "APMC Pune": ["gultekdi", "pune"],
+    "Pune(Moshi)": ["moshi"],
+    "Pune(Pimpri)": ["pimpri"],
+    "Pune(Manjri)": ["manjri"],
+    "Pune(Khadiki)": ["khadki"],
+    "APMC Nagpur": ["kalamna", "nagpur"],
+    "APMC Akola": ["akola"],
+    "APMC Jalgaon": ["jalgaon"],
+    "APMC Kolhapur": ["kolhapur"],
+}

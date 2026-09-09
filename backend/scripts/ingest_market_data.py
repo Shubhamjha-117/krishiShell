@@ -15,13 +15,24 @@ API_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070
 API_KEY = os.getenv("DATA_GOV_API_KEY")
 
 
-def fetch_market_data():
+def fetch_market_data(
+    state=None,
+    commodity=None,
+    offset=0,
+    limit=100
+):
     params = {
         "api-key": API_KEY,
         "format": "json",
-        "offset": 0,
-        "limit": 10
+        "offset": offset,
+        "limit": limit
     }
+
+    if state:
+        params["filters[state]"] = state
+
+    if commodity:
+        params["filters[commodity]"] = commodity
 
     response = requests.get(
         API_URL,
@@ -35,6 +46,53 @@ def fetch_market_data():
     response.raise_for_status()
 
     return response.json()
+
+
+def fetch_all_market_data(
+    state=None,
+    commodity=None,
+    batch_size=100
+):
+
+    all_records = []
+    offset = 0
+
+    while True:
+
+        print(
+            f"Fetching records "
+            f"offset={offset}, "
+            f"limit={batch_size}"
+        )
+
+        data = fetch_market_data(
+            state=state,
+            commodity=commodity,
+            offset=offset,
+            limit=batch_size
+        )
+
+        records = data.get("records", [])
+
+        if not records:
+            break
+
+        all_records.extend(records)
+
+        print(
+            f"Received {len(records)} records"
+        )
+
+        if len(records) < batch_size:
+            break
+
+        offset += batch_size
+
+    print(
+        f"Total records fetched: {len(all_records)}"
+    )
+
+    return all_records
 
 
 def get_or_create_crop(crop_name):
@@ -139,14 +197,21 @@ def save_record(record):
     return True
 
 
-def ingest_data():
+def ingest_data(
+    state=None,
+    commodity=None
+):
+
     print("Fetching government market data...")
 
-    data = fetch_market_data()
+    records = fetch_all_market_data(
+        state=state,
+        commodity=commodity
+    )
 
-    records = data.get("records", [])
-
-    print(f"Records received: {len(records)}")
+    print(
+        f"Records received: {len(records)}"
+    )
 
     inserted = 0
     skipped = 0
@@ -162,6 +227,7 @@ def ingest_data():
                 skipped += 1
 
         except Exception as e:
+
             print("Error processing record:")
             print(record)
             print(e)
@@ -174,8 +240,11 @@ def ingest_data():
     print(f"Skipped: {skipped}")
     print("--------------------------------")
 
-
 if __name__ == "__main__":
 
     with app.app_context():
-        ingest_data()
+        
+        ingest_data(
+            state="Maharashtra",
+            commodity="Onion"
+        )
